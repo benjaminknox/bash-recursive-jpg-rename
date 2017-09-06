@@ -1,18 +1,19 @@
 #!/bin/bash
 
 lastPath=""
-for filename in $(find . -depth)
-do 
-  if [[ ${filename} == *.jpg* && ${filename} == *./* ]]; then
+find . -type f -name '*.*' -print0 | while IFS= read -r -d '' filename; do
+  if [[ $filename == *.jpg* || $filename == *.JPG* ]] && [[ ${filename} == *./* ]]; then
     filePath=${filename/\.\//}
     pathToFile="./"
     IFS='/' read -r -a array <<< "$filePath"
     newPath=""
     for index in "${!array[@]}"; do
       segment="${array[index]}"
-      if [[ ${segment} != *.jpg* ]]; then
-        newPath+="${segment,,}-"
+      if [[ ${segment} != *.jpg* && ${segment} != *.JPG* ]]; then
         pathToFile+="$segment/"
+        segment=${segment/ /-}
+        segment=${segment,,}
+        newPath+="$segment-"
       fi
     done
     if [ "$lastPath" == "$newPath" ]; then
@@ -22,7 +23,7 @@ do
     fi
     newFileName="${newPath}${inc}.jpg"
     pathToFile+="$newFileName"
-    mv ${filename} ${pathToFile}
+    mv "$filename" "$pathToFile"
     lastPath="$newPath"
   fi
 done
